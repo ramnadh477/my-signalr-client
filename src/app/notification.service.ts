@@ -23,7 +23,7 @@ export class NotificationService {
   startConnection(userId: string) {
     const localuserId = localStorage.getItem("userId");
     this.hubConnection = new signalR.HubConnectionBuilder()
-      .withUrl(`https://localhost:7006/Client?access_token=` + localStorage.getItem('token'), {
+      .withUrl(`https://realtimenotifications.onrender.com/Client?access_token=` + localStorage.getItem('token'), {
         withCredentials: false,
 
       })

@@ -7,7 +7,7 @@ import { jwtDecode } from 'jwt-decode';
   providedIn: 'root'
 })
 export class AuthService {
-  private url='https://localhost:7006';
+  private url='https://realtimenotifications.onrender.com';
   private loginUrl = this.url+'/api/Login';
   private NotificationsUrl = this.url+'/Notification';
   logoutTimer: any;
