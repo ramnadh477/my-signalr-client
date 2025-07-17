@@ -1,0 +1,51 @@
+.notifications {
+  padding: 1rem;
+  max-width: 400px;
+}
+li {
+  margin-bottom: 10px;
+  list-style: none;
+}
+.read span {
+  font-weight: normal;
+  color: gray;
+}
+
+/* notification-list.component.css */
+.notification-container {
+  position: fixed;
+  top: 20px;
+  right: 0px;
+
+}
+
+.notification-card {
+  display: flex;
+  align-items: center;
+  padding: 10px 15px;
+  margin-bottom: 10px;
+  border-radius: 5px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+.notification-card.success { background-color: #d4edda; color: #155724; }
+.notification-card.error { background-color: #f8d7da; color: #721c24; }
+/* Add styles for other types like warning, info */
+
+.notification-icon {
+  margin-right: 10px;
+}
+
+.notification-close {
+  background: none;
+  border: none;
+  font-size: 1.2em;
+  cursor: pointer;
+  margin-left: auto;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}

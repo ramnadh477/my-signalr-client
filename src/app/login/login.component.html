@@ -1,0 +1,20 @@
+
+<form class="login" (ngSubmit)="onSubmit()" #loginForm="ngForm">
+  <h2>Welcome, User!</h2>
+  <p>Please log in</p>
+  <input type="text" name="username"
+  [(ngModel)]="username"
+    placeholder="Username"
+    required
+    />
+  <input type="password" name="password"
+  [(ngModel)]="password"
+    placeholder="Password"
+    required
+    />
+  <input type="submit" value="Log In" />
+  <div class="links">
+    <a href="#">Forgot password</a>
+    <a href="#">Register</a>
+  </div>
+</form>

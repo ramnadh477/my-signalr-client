@@ -1,0 +1,80 @@
+<div class="container">
+  <div class="row">
+    <div class="col-md-12">
+
+      <h3>Notifications</h3>
+
+      <ul class="list-group ">
+        <li class="list-group-item d-flex justify-content-between align-items-center">
+          Notifications
+          <div class="badge badge-secondary badge-pill">
+            Mark/Unmark <input type="checkbox"  (change)="getunreadNotifications($event)" aria-label="Checkbox for following text input">
+          </div>
+        </li>
+      </ul>
+      @for (n of notifications; track n.id) {
+      <ul class="list-group">
+        <li class="list-group-item d-flex justify-content-between align-items-center">
+          {{n.message}} - {{n.timestamp}}
+          <span class="badge badge-secondary badge-pill" *ngIf="n.isRead"
+            (click)="markAsRead(n.id,n.userId,n.message,n.isRead,n.timestamp)">Mark as UnRead
+            Read</span>
+          <span class="badge badge-secondary badge-pill" *ngIf="!n.isRead"
+            (click)="markAsUnread(n.id,n.userId,n.message,n.isRead,n.timestamp)">Mark as Read
+            </span>
+        </li>
+      </ul>
+      }
+
+    </div>
+
+
+
+  </div>
+  <div class="row">
+
+    <div class="col-md-6">
+
+
+      <h3>Orders in queue</h3>
+      @for (n of orders(); track n.id) {
+      <ul class="list-group">
+        <li class="list-group-item d-flex justify-content-between align-items-center">
+          {{ n.product }} - {{ n.price }} - {{n.status}}
+          <div *ngIf="n.isEditable" class="input-group">
+
+            <input type="text" class="form-control" [(ngModel)]="n.product" />
+            <input type="text" class="form-control" [(ngModel)]="n.price" />
+            <input type="text" class="form-control" [(ngModel)]="n.status" />
+
+            <div class="btn-group" role="group" aria-label="Basic example">
+              <button type="button" class="btn btn-primary" (click)="saveChanges(n)">Save</button>
+              <button type="button" class="btn btn-secondary" (click)="enableEditMode(n)">Cancel</button>
+            </div>
+
+
+          </div>
+          <div class="badge badge-primary badge-pill" *ngIf="!n.isEditable" (click)="enableEditMode(n)">Edit
+          </div>
+
+        </li>
+      </ul>
+      }
+
+
+
+    </div>
+    <div class="col-md-6">
+      <h3>Group Subscriptions</h3>
+      <ul class="list-group">
+        <li class="list-group-item d-flex justify-content-between align-items-center">
+          order-updates
+          <div class="badge badge-primary badge-pill" (click)="joinGroup('order-updates')">Join Group
+          </div>
+
+        </li>
+      </ul>
+
+    </div>
+  </div>
+</div>
