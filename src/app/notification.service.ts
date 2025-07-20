@@ -3,6 +3,7 @@ import * as signalR from '@microsoft/signalr';
 import { BehaviorSubject } from 'rxjs';
 import { Notification } from './models/notifications';
 import { AuthService } from './auth.service';
+import { userGroupsDto } from './models/userGroupsDto';
 
 @Injectable({
   providedIn: 'root'
@@ -21,7 +22,7 @@ export class NotificationService {
   private currentGroupNotifications: Notification[] = [];
 
   startConnection(userId: string) {
-    const localuserId = localStorage.getItem("userId");
+    const localuserId: number = +localStorage.getItem("userId")!;
     this.hubConnection = new signalR.HubConnectionBuilder()
       .withUrl(`https://realtimenotifications.onrender.com/Client?access_token=` + localStorage.getItem('token'), {
         withCredentials: false,
@@ -33,9 +34,16 @@ export class NotificationService {
     this.currentGroupNotifications = [];
     this.hubConnection.start().then(() => {
       console.log('SignalR Connected.');
-      // this.hubConnection.invoke("SendNotification", "234", "Hello from client!")
-      //   .catch(err => console.error(err.toString()));
+
+      this.hubConnection.invoke("SendNotification", "234", "Hello from client!")
+        .catch(err => console.error(err.toString()));
       this.connectionStarted.next(true);
+    });
+
+    this.hubConnection.on("ReceiveConnectionId", (message: string) => {
+      console.log("Connection ID received: " + message);
+      localStorage.setItem("connectionId", message);
+
     });
 
     this.hubConnection.on("ReceiveNotification", (message: string) => {
@@ -46,12 +54,7 @@ export class NotificationService {
         isRead: false,
         timestamp: new Date()
       };
-      this.authService.postNotification(notification).subscribe({
-        next: (response) => { },
-        error: (error) => {
-          console.error('Login failed', error);
-        }
-      });
+
       this.currentNotifications = [notification, ...this.currentNotifications];
       this._notifications.next(this.currentNotifications);
     });
@@ -64,16 +67,22 @@ export class NotificationService {
         isRead: false,
         timestamp: new Date()
       };
-      this.authService.postNotification(notification).subscribe({
-        next: (response) => { },
-        error: (error) => {
-          console.error('Login failed', error);
-        }
-      })
-      this.currentGroupNotifications = [notification, ...this.currentGroupNotifications];
-      this._groupnotifications.next(this.currentGroupNotifications);
+      if (this.hubConnection?.state === signalR.HubConnectionState.Connected) {
+        this.addNotificationHub(notification);
+      }
+      else
+        console.error("SignalR is not connected.");
+      this.currentNotifications = [notification, ...this.currentNotifications];
+      this._notifications.next(this.currentNotifications);
     });
   }
+  addNotificationHub(ntf: Notification) {
+    this.hubConnection.invoke("AddNotification", ntf.id, ntf.userId, ntf.message, ntf.isRead, ntf.timestamp)
+      // this.hubConnection.invoke("AddNotification")
+      .then(() => console.log("successful"))
+      .catch(err => console.error(err.toString()));
+  }
+
 
   markAsRead(id: any, userID: any, message: any, IsRead: any, date: any) {
     this.currentNotifications = this.currentNotifications.map(n =>
@@ -94,6 +103,10 @@ export class NotificationService {
       .catch(err => console.error(err.toString()));
     this._notifications.next(this.currentNotifications);
   }
+  invokejoinGroups(groupNames: string[]) {
+    this.hubConnection.invoke('JoinGroups', groupNames)
+      .catch(err => console.error('JoinGroups error:', err));
+  }
   invokeHub(id: string, message: string) {
     if (this.hubConnection?.state === signalR.HubConnectionState.Connected) {
       console.log(message + id);
@@ -106,8 +119,9 @@ export class NotificationService {
       console.error("SignalR is not connected.");
     }
   }
-  invokJoinGroupHub(groupName: string) {
-    this.hubConnection.invoke("JoinGroup", groupName)
+  invokJoinGroupHub(usergroup: userGroupsDto) {
+
+    this.hubConnection.invoke("JoinGroup", usergroup)
       .then(() => console.log("successful"))
       .catch(err => console.error(err.toString()));
   }
@@ -143,4 +157,6 @@ export class NotificationService {
       }
     });
   }
+
+
 }

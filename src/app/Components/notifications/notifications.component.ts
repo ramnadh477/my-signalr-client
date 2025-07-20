@@ -7,6 +7,8 @@ import { Order } from '../../models/orders';
 import { FormsModule } from '@angular/forms';
 import { Subject, takeUntil } from 'rxjs';
 import { AuthService } from '../../auth.service';
+import { Groups } from '../../models/groups';
+import { userGroupsDto } from '../../models/userGroupsDto';
 
 @Component({
   selector: 'app-notifications',
@@ -18,6 +20,7 @@ export class NotificationsComponent implements OnInit {
   notifications: Notification[] = [];
   groupnotifications: Notification[] = [];
   orders = signal<Order[]>([]);
+  groups = signal<Groups[]>([]);
   private destroy$ = new Subject<void>();
   constructor(private authService: AuthService, private notificationService: NotificationService, private orderService: OrderserviceService) { }
 
@@ -26,6 +29,7 @@ export class NotificationsComponent implements OnInit {
     this.notificationService.groupnotifications$.pipe(takeUntil(this.destroy$)).subscribe(n => this.groupnotifications = n);
     this.notificationService.startConnection("user-id-123");
     this.notificationService.getNotifications();
+    this.getGroups();
     this.orderService.getOrders().pipe(takeUntil(this.destroy$)).subscribe({
       next: (response) => {
         this.orders.set(response);
@@ -38,12 +42,12 @@ export class NotificationsComponent implements OnInit {
     });
 
   }
-  markAsRead(id: any,userID :any, message:any , IsRead :any , date:any ) {
-    this.notificationService.markAsRead(id,userID,message,IsRead,date);
+  markAsRead(id: any, userID: any, message: any, IsRead: any, date: any) {
+    this.notificationService.markAsRead(id, userID, message, IsRead, date);
   }
 
-  markAsUnread(id: any,userID :any, message:any , IsRead :any , date:any) {
-    this.notificationService.markAsUnread(id,userID,message,IsRead,date);
+  markAsUnread(id: any, userID: any, message: any, IsRead: any, date: any) {
+    this.notificationService.markAsUnread(id, userID, message, IsRead, date);
   }
 
   enableEditMode(item: any): void {
@@ -62,12 +66,25 @@ export class NotificationsComponent implements OnInit {
     );
     this.orders.set(updated);
     const message = 'Product ' + item.product + ' Modified';
-    this.notificationService.invokeHub(item.product, message);
+    const notification: Notification = {
+      id: 0,
+      userId: 0,
+      message,
+      isRead: false,
+      timestamp: new Date()
+    };
+    this.authService.postNotification(notification).subscribe({
+      next: (response) => { },
+      error: (error) => {
+        console.error('Login failed', error);
+      }
+    })
+    //this.notificationService.invokeHub(item.product, message);
     //this.notificationService.invokeHub(item.id, 'Updated Order no: ' + item.id + ' Order Status: ' + item.status)
 
 
   }
-  getunreadNotifications(event: Event){
+  getunreadNotifications(event: Event) {
     const read = (event.target as HTMLInputElement).checked;
     this.notificationService.getunreadNotifications(read);
   }
@@ -76,12 +93,46 @@ export class NotificationsComponent implements OnInit {
 
     item.editMode = false;
   }
-  joinGroup(groupName: string) {
-    this.notificationService.invokJoinGroupHub(groupName)
+  joinGroup(groupName: string, groupId: any, isJoin: boolean, id: number) {
+    const localuserId: number = +localStorage.getItem("userId")!;
+
+    let userName = localStorage.getItem("username")?.toString()!
+
+    const userGroups: userGroupsDto = {
+      id: id,
+      userId: localuserId,
+      userGroupId: groupId,
+      userName: userName,
+      groupName: groupName,
+      isJoined: isJoin,
+    };
+    this.notificationService.invokJoinGroupHub(userGroups)
+    const updated = this.groups().map(g =>
+      g.id === id ? {
+        ...g, isJoined: !isJoin} : g
+    );
+    this.groups.set(updated);
   }
   ngOnDestroy() {
     this.destroy$.next();
     this.destroy$.complete();
+  }
+
+  getGroups() {
+    console.log(localStorage.getItem("userId"))
+    const userId = localStorage.getItem("userId");
+    this.authService.getGroups(userId).subscribe({
+      next: (response: Groups[]) => {
+
+        this.groups.set(response);
+        const lclgrp:string[] =this.groups().filter(u=>u.isJoined==true).map(g => g.groupName);
+        console.log(lclgrp);
+        this.notificationService.invokejoinGroups( lclgrp);
+      },
+      error: (error) => {
+        console.error('Getting Groups Failed.', error);
+      }
+    });
   }
 
 

@@ -11,6 +11,8 @@ export class OrderserviceService {
   constructor(private http: HttpClient) { }
 
   private Url = 'https://realtimenotifications.onrender.com/Orders';
+  // private Url = 'https://localhost:7006/Orders';
+
   getOrders(): Observable<any> {
     return this.http.get(this.Url);
 

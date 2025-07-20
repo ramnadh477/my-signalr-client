@@ -1,4 +1,4 @@
-import { Component, inject, NgModule, signal } from '@angular/core';
+import { Component, inject, NgModule, OnInit, signal } from '@angular/core';
 import { AuthService } from '../auth.service';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -10,13 +10,18 @@ import { Notification } from '../../app/models/notifications';
   templateUrl: './login.component.html',
   styleUrl: './login.component.scss'
 })
-export class LoginComponent {
+export class LoginComponent implements OnInit {
 
   username = signal('');
   password = signal('');
   router = inject(Router);
 
   constructor(private authService: AuthService) { }
+  ngOnInit(): void {
+    if (this.authService.isLoggedIn()) {
+      this.router.navigate(['/Notification']);
+    }
+  }
 
   onSubmit() {
 

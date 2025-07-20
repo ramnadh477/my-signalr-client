@@ -4,7 +4,7 @@
   <a routerLink="/" class="logo">Home</a>
 
   <div class="header-right">
-    <a class="active" >Welcome {{username}}</a>
+    <a class="active" >Welcome {{this.usernameLogged()}}</a>
 
     <a class="" (click)="logout()">Logout</a>
   </div>

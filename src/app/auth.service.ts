@@ -8,17 +8,20 @@ import { jwtDecode } from 'jwt-decode';
 })
 export class AuthService {
   private url='https://realtimenotifications.onrender.com';
-  private loginUrl = this.url+'/api/Login';
-  private NotificationsUrl = this.url+'/Notification';
+  // private url = 'https://localhost:7006';
+
+  private loginUrl = this.url + '/api/Login';
+  private NotificationsUrl = this.url + '/Notification';
+  private GroupsUrl = this.url + '/Group';
   logoutTimer: any;
   constructor(private http: HttpClient) { }
 
-  login(username: string, password: string):Observable<any> {
+  login(username: string, password: string): Observable<any> {
 
     const credentials = { username, password };
     return this.http.post<any>(this.loginUrl, credentials);
   }
-  getloginUser():any{
+  getloginUser(): any {
     return localStorage.getItem('username');
   }
   logout() {
@@ -45,15 +48,19 @@ export class AuthService {
       alert('Session expired. Please log in again.');
     }, timeout);
   }
-  getNotifications(id:any):Observable<any> {
-    return this.http.get(this.NotificationsUrl+'?id='+id);
+  getNotifications(id: any): Observable<any> {
+    return this.http.get(this.NotificationsUrl + '?id=' + id);
   }
-  getunreadNotifications(id:any,read:any):Observable<any> {
-    return this.http.get(this.NotificationsUrl+'/'+id+'/'+read);
+  getGroups(id: any): Observable<any> {
+    return this.http.get(this.GroupsUrl + '/' + id);
   }
-  postNotification(notification:any){
-
+  getunreadNotifications(id: any, read: any): Observable<any> {
+    return this.http.get(this.NotificationsUrl + '/' + id + '/' + read);
+  }
+  postNotification(notification: any) {
+    notification.userId = localStorage.getItem('userId');
     return this.http.post<any>(this.NotificationsUrl, notification);
   }
+
 
 }
